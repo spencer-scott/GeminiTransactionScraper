@@ -68,7 +68,8 @@ function script() {
             const day = date.getDate().toString().padStart(2, "0");
             const formattedDate = `${year}-${month}-${day}`;
             const merchant = textData[0].textContent.trim().replace(/\n/g, '');
-            const amount = textData[3].textContent.trim().replace(/,/g, '').replace("Processing", "");
+            var processing = false;
+            const amount = textData[3].textContent.trim().replace(/,/g, '').replace("Processing", function(token){processing = true; return "";});
             var dataRow = "";
             if (textData[2].textContent != "-") {
                 const reward = textData[2].querySelector("p").textContent;
@@ -78,8 +79,10 @@ function script() {
             } else {
                 dataRow = `${formattedDate},${merchant},,Gemini Credit,,Debt payment,${amount.slice(1)}\n`;
             }
-            data.push(dataRow);
-            console.log(dataRow);
+            if (!processing) {
+                data.push(dataRow);
+                console.log(dataRow);
+            }
         });
 
         console.log("Finished row scrape with " + data.length + " rows.");
@@ -89,7 +92,8 @@ function script() {
             type: "text/csv;charset=utf-8;",
         });
         const csvUrl = URL.createObjectURL(csvBlob);
-        const fileName = "gemini_credit_transactions.csv";
+        var timestamp = new Date().toISOString().replace(/:/g, "-");
+        const fileName = "gemini_credit_transactions_" + timestamp + ".csv";
         //GM_download(csvUrl, fileName);
         const downloadLink = document.createElement("a");
         downloadLink.href = csvUrl;
